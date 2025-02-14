@@ -376,7 +376,7 @@ class Instanton():
             convergence_type = "converged"
         return np.asarray(rrange), np.asarray(yrange), convergence_type
 
-    def findProfile(self, phimeta, vev, phibar, f=1e-2, useInitialConditions=True):
+    def findProfile(self, phimeta, vev, phibar, f=1e-3, useInitialConditions=True):
         """Find the instanton profile minimizing the action
 
         Parameters

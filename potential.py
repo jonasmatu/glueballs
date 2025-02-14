@@ -12,9 +12,6 @@ from scipy import interpolate
 
 import calcBounce as cb
 
-import warnings
-# warnings.filterwarnings("error")
-
 
 class Potential():
     def __init__(self, xmin, vir, epsilon, delta, n, N=4.5, withQCD=True):
@@ -242,18 +239,10 @@ class Potential():
             d2Vf[np.where(x > 0)] += self.d2VQCD(mu)
         return d2Vf
 
-    def findBarrier(self, T):
-        """Find the location of the potential barrier
-
-        Parameters
-        ----------
-        
-        Returns
-        ----------
-        xbar : float
-        """
-        res = optimize.minimize_scalar(lambda x: -self.Vfull(x, T=T), bounds=(0, self.xmin+T), method='bounded',
-                                       tol=1e-15)
+    def findBarrier(self, T: float) -> float:
+        """Find the location of the potential barrier."""
+        res = optimize.minimize_scalar(lambda x: -self.Vfull(x, T=T), bounds=(-T, self.xmin),
+                                       options={"xatol": 1e-20})
         if not res.success:
             raise Exception("Did not find potential barrier!")
         xbar = res.x
@@ -271,14 +260,15 @@ class Potential():
         ----------
         xmeta_min
         """
-        res = optimize.minimize_scalar(self.Vfull, bounds=(xmin, xbar), args=(0), tol=1e-20)
+        res = optimize.minimize_scalar(self.Vfull, bounds=(xmin, xbar), args=(0),
+                                       options={"xatol": 1e-20})
         if not res.success:
             xmeta_min = 0.0
         else:
             xmeta_min = res.x
         return xmeta_min
 
-    def plotPotential(self, xmax, T, xmin=0):
+    def plotPotential(self, xmax: float, T: float, xmin=0):
         """Plot the potential.
 
         Parameters

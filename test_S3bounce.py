@@ -70,9 +70,10 @@ def testInstantonS4(T, xmin, vir, eps, delta, n, N, withQCD):
     V = lambda x: pot.Vfull(x, T)
     dV = lambda x: pot.dVfull(x, T)
     d2V = lambda x: pot.d2Vfull(x, T)
-    phibar = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(0, xmin), tol=1e-15).x
+    phibar = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(0, xmin),
+                                      options={"xatol": 1e-15}).x
     print("phibar = ", phibar)
-    phimeta = optimize.minimize_scalar(V, bounds=(0, phibar), tol=1e-20).x
+    phimeta = optimize.minimize_scalar(V, bounds=(0, phibar), options={"xatol": 1e-20}).x
     print("meta minimum = ", phimeta)
 
     # xx = np.logspace(np.log10(phimeta/2), np.log10(phimeta*2))
