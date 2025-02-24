@@ -152,4 +152,4 @@ if __name__=="__main__":
     ndim=4
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-    Tnuc = findNucleptionTemp(pot, 100, 1e-10, ndim, Ttol=1e-2, verbose=True)
+    Tnuc = findNucleationTemp(pot, 100, 1e-10, ndim, Ttol=1e-2, verbose=True)
