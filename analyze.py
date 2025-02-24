@@ -12,7 +12,7 @@ from calc_nucleation import findNucleationTemp
 from potential import Potential
 
 
-
+plt.style.use("plots.mplstyle")
 
 def plotTnuc(fname):
     f = h5py.File(fname, "r")
@@ -32,20 +32,36 @@ def plotTnuc(fname):
     vir_range = np.linspace(virstart, virend, npoints)
     eps_range = np.linspace(epsstart, epsend, npoints)
 
-    fig, ax = plt.subplots(1,2,layout="constrained", sharey=True)
+    fig, ax = plt.subplots(1,2,figsize=(12,6),layout="constrained", sharey=True)
 
-    Tnuc3[np.where(Tnuc3 < 0)] = np.nan
-    Tnuc4[np.where(Tnuc4 < 0)] = np.nan
-    abc = ax[0].pcolor(eps_range, vir_range, Tnuc3, cmap="viridis")
+    Tnuc3[np.where(Tnuc3 <= 0)] = np.nan
 
-    plt.colorbar(abc, ax=ax[0], cmap="viridis")
+    vmin = np.nanmin(Tnuc3)
+    vmax = np.nanmax(Tnuc3)
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    
+    abc = ax[0].pcolor(eps_range, vir_range, Tnuc3, cmap="viridis", norm=norm)
+    clb = plt.colorbar(abc, ax=ax[0], norm=norm)
+    clb.ax.set_title(r"$T_\mathrm{nuc}$")
 
-    abc = ax[1].pcolor(eps_range, vir_range, Tnuc4, cmap="viridis")
-    plt.colorbar(abc, ax=ax[1], cmap="viridis")
+    Tnuc4[np.where(Tnuc4 <= 0)] = np.nan
+    vmin = np.nanmin(Tnuc4)
+    vmax = np.nanmax(Tnuc4)
+    norm = mpl.colors.LogNorm(vmin=vmin, vmax=vmax)
+    
+    abc = ax[1].pcolor(eps_range, vir_range, Tnuc4, cmap="viridis", norm=norm)
+    clb = plt.colorbar(abc, ax=ax[1], norm=norm)
+    clb.ax.set_title(r"$T_\mathrm{nuc}$")
 
     ax[0].set_ylabel(r"$v_{\mathrm{IR}}$")
     ax[0].set_xlabel(r"$\epsilon$")
     ax[1].set_xlabel(r"$\epsilon$")
+
+    ax[0].set_title(r"O(3) tunneling")
+    ax[1].set_title(r"O(4) tunneling")
+    plt.suptitle(f"n = {n:}, " + r"$\tilde{\delta} = $" + f"{deltat:}, " \
+                 + r"$\mu_\mathrm{min}$ = " + f"{xmin:3.0f}", fontsize=14)
+    
 
     plt.show()
 

@@ -33,20 +33,6 @@ def getTnuc(pot, Tmax, Tmin):
 
     return Tnuc3, Tnuc4
 
-def getTnucApprox(pot):
-    """Calculate the nucleation temperature with the triangluar approximation
-    for the action
-
-    Parameters
-    ----------
-
-    Returns
-    ----------
-
-    """
-    
-    
-
 
 def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
     # Reproduce fig. 4 of servant and harling
@@ -63,7 +49,10 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
             delta = vir**2 * deltat
             pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
             Tcrit = np.power(-8* pot.VGW(xmin)/(np.pi**2 * N**2), 1/4.0)
-            input_params.append((pot, Tcrit*0.99, 1e-10))
+            # by hand: 
+            Tmax = Tcrit*0.99
+            Tmax = 100
+            input_params.append((pot, Tmax, 1e-10))
 
     results = pool.starmap(getTnuc, input_params)
     pool.close()

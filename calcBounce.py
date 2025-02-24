@@ -436,7 +436,7 @@ class Instanton():
 
             # Reached tolerance?
             if (xmax-xmin) < self.xtol:
-                print("Reached tolerance")
+                # print("Reached tolerance")
                 break
 
         r, y, ctype = self.integrateAndSaveProfile(r0, y0, dr0, drmin, rmax, phimeta,
@@ -504,29 +504,31 @@ def S3TriangleApprox(pot, T):
     phi0 = res.x
     return S3, phi0
 
-def triangleApproxAction(pot, T: float, d: int) -> (float, float):
+
+def triangleApproxAction(pot, T: float, d: int, debug=False) -> (float, float):
     gamma = special.gamma
     phitol = 1e-8
     
     V = lambda x: pot.Vfull(x, T)
-    Tcrit = np.power(-8 * pot.VGW(pot.xmin)/(np.pi**2 * pot.N**2), 1/4.0)
     phiT = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(-T, pot.xmin),
                                       options={"xatol": 1e-20}).x
 
     phip = -T
     phim = pot.xmin
-    lplus =  (V(phiT) - V(phip))/(phiT- phip)
+    lplus = (V(phiT) - V(phip))/(phiT- phip)
 
+    phim = 2 * phiT
+    # Approximate the slope with the release point as the reference point
+    it = 0
     while True:
-        lminus = - (V(phiT) - V(phim)) / (phiT- phim)
+        it += 1
+        lminus = - (V(phiT) - V(phim)) / (phiT - phim)
         c = lminus/lplus
 
-        alpha = (2 * c - d*(np.power(c + 1, d/2) - 1))/(2*d*(d-2))
+        alpha = (2 * c - d*((c + 1)**(2/d) - 1))/(2*d*(d-2))
 
         # releasepoint 
-        phi0 = phiT - c/(2*d*alpha) * (phiT - phip)
-        RT = np.sqrt(2 * d *(phi0 - phiT) / lminus)
-        Rplus = np.power(c + 1, 1/d) * RT
+        phi0 = phiT + c/(2*d*alpha) * (phiT - phip)
 
         S = 4 * (c + 1)/(d *(d + 2) *gamma(d/2)) \
             * (2*np.pi * (d - 2) * d / (2*c- d*((c+1)**(2/d) - 1)))**(d/2) \
@@ -534,8 +536,28 @@ def triangleApproxAction(pot, T: float, d: int) -> (float, float):
 
         if np.abs(phi0 - phim) < phitol:
             break
+        elif it > 1000:
+            break
 
-        phim = (phi0 + phim)/2
+        phim = phi0 + (phim- phi0)*.5
+
+        # phim = 2 * phiT
+        # break
+
+    if debug:
+        phirange = np.linspace(phip, phi0*1.05, 200)
+        phiprange = np.linspace(phip, phiT, 100)
+        phimrange = np.linspace(phiT, phim, 100)
+        plt.plot(phirange, V(phirange))
+        plt.scatter(phiT, V(phiT), label=r"$\phi$ barrier")
+        plt.scatter(phi0, V(phi0), label=r"$\phi_0$")
+        plt.plot(phiprange, V(phip) + lplus*(phiprange - phip), color="green")
+        plt.plot(phimrange, V(phiT)  + lminus*(phiT - phimrange), color="green")
+        plt.xlabel(r"$\phi$")
+        plt.ylabel(r"$V(\phi)$")
+
+        plt.legend()
+        plt.show()
 
     return S, phi0
 
@@ -548,11 +570,11 @@ def testTriangle():
     vir = 1
     eps = 1/20
     pot = Potential(xmin, vir, eps, delta, n)
-    T = 1e-6
+    T = 1e-4
 
-    S4, phi40 = triangleApproxAction(pot, T, 4)
+    S4, phi40 = triangleApproxAction(pot, T, 4, debug=True)
     print("O(4): phi0 = ", phi40, " S4 = ", S4)
-    S3, phi30 = triangleApproxAction(pot, T, 3)
+    S3, phi30 = triangleApproxAction(pot, T, 3, debug=True)
     print("O(3): phi0 = ", phi30, " S3/T = ", S3/T)
 
 

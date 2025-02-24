@@ -147,13 +147,15 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
 
 if __name__=="__main__":
     xmin = 2.5e3
-    vir = 0.95
-    eps = 0.08
-    delta = -.3
+    vir = 0.85
+    eps = 0.05
+    deltat = -0.5
     N = 4.5
     withQCD=True
-    n = 0.15
-    ndim=4
+    n = 0.3
+    ndim = 4
+
+    delta = -.5 * vir**2
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-    Tnuc = findNucleationTemp(pot, 100, 1e-10, ndim, Ttol=1e-2, verbose=True)
+    Tnuc = findNucleationTemp(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)

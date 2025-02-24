@@ -251,21 +251,21 @@ def plot_n_scan(fname):
     fig, ax = plt.subplots(1,1, layout="constrained")
     try:
         nrange, S4range, S4aprrange, S4TRrange, S3range, S3aprrange, S3TRrange = np.loadtxt(fname, delimiter=",")
-        plt.semilogy(nrange, S4aprrange, label=r"$S_4$ aprx")
-        plt.semilogy(nrange, S4TRrange, label=r"$S_4$ triangle")
+        # plt.semilogy(nrange, S4aprrange, label=r"$S_4$ Servant&Harling", color="C1", ls="--")
+        plt.semilogy(nrange, S4TRrange, label=r"$S_4$ triangle", color="C1", ls="-.")
         if T != 0:
-            plt.semilogy(nrange, S3aprrange/T, label=r"$S_3/T aprx$")
-            plt.semilogy(nrange, S3TRrange/T, label=r"$S_3/T triangle$")
+            # plt.semilogy(nrange, S3aprrange/T, label=r"$S_3/T$ Servant&Harling", color="C0", ls="--")
+            plt.semilogy(nrange, S3TRrange/T, label=r"$S_3/T$  triangle", color="C0", ls="-.")
     except:
         nrange, S4range, S3range = np.loadtxt(fname, delimiter=",")
-    plt.semilogy(nrange, S4range, label=r"$S_4$")
+    plt.semilogy(nrange, S4range, label=r"$S_4$", color="C1")
     if T != 0:
-        plt.semilogy(nrange, S3range/T, label=r"$S_3/T$")
+        plt.semilogy(nrange, S3range/T, label=r"$S_3/T$", color="C0")
     plt.title(f"T = {T:2.3g}, mumin = {xmin:2.1g}, vir = {vir:2.2g},\n" + \
               f"epsilon = {eps:2.3g}, delta = " + f"{delta:2.1g}, " + \
               f"N = {N:2.2g}")
-    if T != 0.0:
-        plt.ylim(0, 1.1*np.maximum(np.max(S3range/T), np.max(S4range)))
+    # if T != 0.0:
+    #     plt.ylim(0, 1.1*np.maximum(np.max(S3range/T), np.max(S4range)))
     plt.ylabel("Action")
     plt.xlabel("n")
     plt.legend()
