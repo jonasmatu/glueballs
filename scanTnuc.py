@@ -76,3 +76,5 @@ if __name__=="__main__":
     npoints = 30
     n_jobs = 12
     fname = "data/fig4scan.h5"
+
+    scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD, npoints=npoints, n_jobs=n_jobs)
