@@ -471,7 +471,89 @@ class Instanton():
         S += volume * (self.V(phi[0]) - self.V(phimeta))
         return S
 
-        
+
+
+def S4TriangleApprox(pot, T):
+
+    V = lambda x: pot.Vfull(x, T)
+    phibar = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(0, pot.xmin),
+                                      options={"xatol": 1e-20}).x
+
+    def S4apr(x):
+        S = 9 * pot.N**4 / (8*np.pi) * x**4/(- V(x))
+        return S
+    res = optimize.minimize_scalar(S4apr, bounds=(phibar, pot.xmin))
+    S4 = res.fun
+    phi0 = res.x
+    return S4, phi0
+
+
+def S3TriangleApprox(pot, T):
+
+    V = lambda x: pot.Vfull(x, T)
+    Tcrit = np.power(-8 * pot.VGW(pot.xmin)/(np.pi**2 * pot.N**2), 1/4.0)
+    phibar = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(0, pot.xmin),
+                                      options={"xatol": 1e-20}).x
+
+    def S3apr(x):
+        S = np.sqrt(3)/np.pi**2 * pot.N**3 * x**3
+        S /= np.sqrt(V(pot.xmin) * (T/Tcrit)**4 - V(x))
+        return S
+    res = optimize.minimize_scalar(S3apr, bounds=(phibar, pot.xmin + T))
+    S3 = res.fun
+    phi0 = res.x
+    return S3, phi0
+
+def triangleApproxAction(pot, T: float, d: int) -> (float, float):
+    gamma = special.gamma
+    phitol = 1e-8
+    
+    V = lambda x: pot.Vfull(x, T)
+    Tcrit = np.power(-8 * pot.VGW(pot.xmin)/(np.pi**2 * pot.N**2), 1/4.0)
+    phiT = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(-T, pot.xmin),
+                                      options={"xatol": 1e-20}).x
+
+    phip = -T
+    phim = pot.xmin
+    lplus =  (V(phiT) - V(phip))/(phiT- phip)
+
+    while True:
+        lminus = - (V(phiT) - V(phim)) / (phiT- phim)
+        c = lminus/lplus
+
+        alpha = (2 * c - d*(np.power(c + 1, d/2) - 1))/(2*d*(d-2))
+
+        # releasepoint 
+        phi0 = phiT - c/(2*d*alpha) * (phiT - phip)
+        RT = np.sqrt(2 * d *(phi0 - phiT) / lminus)
+        Rplus = np.power(c + 1, 1/d) * RT
+
+        S = 4 * (c + 1)/(d *(d + 2) *gamma(d/2)) \
+            * (2*np.pi * (d - 2) * d / (2*c- d*((c+1)**(2/d) - 1)))**(d/2) \
+            * (phiT - phip)**d / (V(phiT) - V(phip))**((d-2)/2)
+
+        if np.abs(phi0 - phim) < phitol:
+            break
+
+        phim = (phi0 + phim)/2
+
+    return S, phi0
+
+def testTriangle():
+    from potential import Potential
+    xmin = 2.5e3
+    delta = -.5
+    n = 0.3
+    N = 4.5
+    vir = 1
+    eps = 1/20
+    pot = Potential(xmin, vir, eps, delta, n)
+    T = 1e-6
+
+    S4, phi40 = triangleApproxAction(pot, T, 4)
+    print("O(4): phi0 = ", phi40, " S4 = ", S4)
+    S3, phi30 = triangleApproxAction(pot, T, 3)
+    print("O(3): phi0 = ", phi30, " S3/T = ", S3/T)
 
 
 def test_rscale(vir, epsilon, withQCD=True):

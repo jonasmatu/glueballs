@@ -25,13 +25,27 @@ def getTnuc(pot, Tmax, Tmin):
     try:
         Tnuc3 = findNucleationTemp(pot, Tmax, Tmin, ndim=3)
     except:
-        Tnuc3 = 0.0
+        Tnuc3 = -1
     try:
         Tnuc4 = findNucleationTemp(pot, Tmax, Tmin, ndim=4)
     except:
-        Tnuc4 = 0.0
+        Tnuc4 = -1
 
     return Tnuc3, Tnuc4
+
+def getTnucApprox(pot):
+    """Calculate the nucleation temperature with the triangluar approximation
+    for the action
+
+    Parameters
+    ----------
+
+    Returns
+    ----------
+
+    """
+    
+    
 
 
 def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):

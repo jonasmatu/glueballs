@@ -97,22 +97,33 @@ def scan_n_at_T(T, fname, nrange=(0.1,0.7), npoints=50):
     # nrange = np.logspace(np.log10(0.1), np.log10(0.7), npoints)
     nrange = np.linspace(nrange[0], nrange[1], npoints)
     S4range = np.zeros_like(nrange)
+    S4aprrange = np.zeros_like(nrange)
+    S4TRrange = np.zeros_like(nrange)
     S3range = np.zeros_like(nrange)
+    S3aprrange = np.zeros_like(nrange)
+    S3TRrange = np.zeros_like(nrange)
     for i, n in enumerate(nrange):
         try:
             S4range[i] ,_ = getActionAtT(T, xmin, vir, eps, delta, n, N, withQCD=True, ndim=4)
+            pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=True)
+            S4aprrange[i], _ = S4TriangleApprox(pot, T)
+            S4TRrange[i], _ = triangleApproxAction(pot, T, 4)
         except Exception as e:
             print(e)
             S4range[i] = np.nan
         try:
             S3range[i] ,_ = getActionAtT(T, xmin, vir, eps, delta, n, N, withQCD=True, ndim=3)
+            pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=True)
+            S3aprrange[i], _ = S3TriangleApprox(pot, T)
+            S3TRrange[i], _ = triangleApproxAction(pot, T, 3)
         except Exception as e:
             print(e)
             S3range[i] = np.nan
 
     header = f"T={T:}, xmin={xmin:}, vir={vir:}, eps={eps:}, delta={delta:}, N={N:}"
-    np.savetxt(fname, np.asarray([nrange, S4range, S3range]), header=header, delimiter=",")
-
+    np.savetxt(fname, np.asarray([nrange, S4range, S4aprrange,
+                                  S4TRrange, S3range, S3aprrange, S3TRrange]), header=header, delimiter=",")
+    
 
 def debug_n_at_T(T, fname, nrange=(0.1,0.7), npoints=50):
     """description
@@ -236,15 +247,25 @@ def plot_n_scan(fname):
                 delta = float(abc[-1])
             elif "N" in abc[0]:
                 N = float(abc[-1])
-    
-    nrange, S4range, S3range = np.loadtxt(fname, delimiter=",")
+
     fig, ax = plt.subplots(1,1, layout="constrained")
-    plt.plot(nrange, S4range, label=r"$S_4$")
-    plt.plot(nrange, S3range/T, label=r"$S_3/T$")
+    try:
+        nrange, S4range, S4aprrange, S4TRrange, S3range, S3aprrange, S3TRrange = np.loadtxt(fname, delimiter=",")
+        plt.semilogy(nrange, S4aprrange, label=r"$S_4$ aprx")
+        plt.semilogy(nrange, S4TRrange, label=r"$S_4$ triangle")
+        if T != 0:
+            plt.semilogy(nrange, S3aprrange/T, label=r"$S_3/T aprx$")
+            plt.semilogy(nrange, S3TRrange/T, label=r"$S_3/T triangle$")
+    except:
+        nrange, S4range, S3range = np.loadtxt(fname, delimiter=",")
+    plt.semilogy(nrange, S4range, label=r"$S_4$")
+    if T != 0:
+        plt.semilogy(nrange, S3range/T, label=r"$S_3/T$")
     plt.title(f"T = {T:2.3g}, mumin = {xmin:2.1g}, vir = {vir:2.2g},\n" + \
               f"epsilon = {eps:2.3g}, delta = " + f"{delta:2.1g}, " + \
               f"N = {N:2.2g}")
-    plt.ylim(0, 1.1*np.maximum(np.max(S3range/T), np.max(S4range)))
+    if T != 0.0:
+        plt.ylim(0, 1.1*np.maximum(np.max(S3range/T), np.max(S4range)))
     plt.ylabel("Action")
     plt.xlabel("n")
     plt.legend()

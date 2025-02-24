@@ -21,7 +21,7 @@ def plotTnuc(fname):
     virstart, virend = data.attrs["vir_start"], data.attrs["vir_end"]
     epsstart, epsend = data.attrs["eps_start"], data.attrs["eps_end"]
     xmin = data.attrs["xmin"] 
-    deltat = data.attrs["delta"]
+    deltat = data.attrs["deltat"]
     n = data.attrs["n"]
     N = data.attrs["N"]
     withQCD = data.attrs["withQCD"]
