@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import multiprocessing
 import h5py
+import argparse
+import os
 
 from scipy import optimize
 from scipy import interpolate
@@ -14,6 +16,8 @@ from scipy import interpolate
 import calcBounce as cb
 from calc_nucleation import findNucleationTemp
 from potential import Potential
+
+
 
 
 
@@ -59,7 +63,7 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
         g.attrs["vir_start"], g.attrs["vir_end"] = vir_range[0], vir_range[-1]
         g.attrs["eps_start"], g.attrs["eps_end"] = eps_range[0], eps_range[-1]
         g.attrs["xmin"] = xmin
-        g.attrs["delta"] = delta
+        g.attrs["deltat"] = deltat
         g.attrs["n"] = n
         g.attrs["N"] = N
         g.attrs["withQCD"] = withQCD
@@ -73,8 +77,24 @@ if __name__=="__main__":
     n = 0.3
     N = 4.5
     withQCD=True
-    npoints = 30
-    n_jobs = 12
-    fname = "data/fig4scan.h5"
 
-    scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD, npoints=npoints, n_jobs=n_jobs)
+    parser = argparse.ArgumentParser(description='Parameter scan for conformal model.')
+    parser.add_argument('-j', '--jobs', type=int)
+    parser.add_argument('-f', '--folder', type=str)
+    parser.add_argument('-v', '--verbose', type=str)
+    parser.add_argument('-n', '--npoints', type=str)
+
+    args = parser.parse_args()
+
+    # ==================================================
+    # Initialise scan with parameters from config.txt
+    # ==================================================
+    folder = args.folder
+    if folder[-1] != "/":
+        folder += "/"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    fname = folder + "data.hdf5"
+    scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD,
+             npoints=args.npoints, n_jobs=args.jobs)
