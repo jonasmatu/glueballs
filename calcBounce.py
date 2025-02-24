@@ -413,7 +413,7 @@ class Instanton():
             rmin = rscale * self.rmin_scaling
             rmax = rscale * self.rmax_scaling
             dr0 = rmin
-            drmin = dr0 * 0.01
+            drmin = dr0 * 1e-4
             epsabs = abs(np.array([vev, vev/rscale])*self.phitol)
             if useInitialConditions:
                 r0, phi0, dphi0 = self.initialConditions(phi0, rmin, f=f)

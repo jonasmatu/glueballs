@@ -51,8 +51,8 @@ def getActionAtT(T: float, pot: Potential, ndim: int, debug=False) -> (float, fl
     # print("phibar = ", phibar)
     # print("phiroot = ", phiroot)
 
-    insta = Instanton(V, dV, d2V, ndim=ndim, Nkin=3*N**2/(2*np.pi**2),
-                      xtol=1e-15, phitol=1e-12, rmin_scaling=1e-8) # This setting is very important for small T!
+    insta = Instanton(V, dV, d2V, ndim=ndim, Nkin=3*pot.N**2/(2*np.pi**2),
+                      xtol=1e-12, phitol=1e-10, rmin_scaling=1e-4) # This setting is very important for small T!
     r, y, ctype = insta.findProfile(phimeta, pot.xmin, phibar, f=1e-3)
     phi, dphi = y.T
     phi0 = phi[0]
@@ -90,7 +90,7 @@ def nuclCriterion(S: float, phi0: float, T: float, xmin: float) -> float:
 
 
 def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
-                       Ttol=1e-2) -> float:
+                       Ttol=1e-2, verbose=False) -> float:
     """description
 
     Parameters
@@ -101,7 +101,7 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
 
     """
     critdict = {}
-    def crit(T, critdict=critdict):
+    def crit(T, critdict=critdict, verbose=False):
         try:
             T = T[0]
         except:
@@ -111,10 +111,11 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
             S = S/T
         critdict[T] = (S, phi0)
         c = nuclCriterion(S, phi0, T, pot.xmin)
-        print(f"T = {T:2.5g}, S = {S:2.5g}, phi0 = {phi0:2.5g}, criterion = {c:2.5g}")
+        if verbose:
+            print(f"T = {T:2.5g}, S = {S:2.5g}, phi0 = {phi0:2.5g}, criterion = {c:2.5g}")
         return c
 
-    def abort_fmin(T, critdict=critdict):
+    def abort_fmin(T, critdict=critdict, verbose=False):
         T = T[0]
         S, phi0 = critdict[T]
         if nuclCriterion(S, phi0, T, pot.xmin) < 0:
@@ -125,32 +126,30 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
     # First find the minimal value of the tunneling criterion!
     try:
         res = optimize.minimize(crit, 0.1*(Tmin+Tmax), method='Nelder-Mead', bounds=[(Tmin, Tmax)],
-                                 tol=.1, callback=abort_fmin)
+                                tol=.1, callback=abort_fmin, args=(critdict, verbose))
         Tmin = res.x[0]
     except StopIteration as e:
         Tmin = e.args[0]
 
             
     
-    print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
+    # print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
     if nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin) > 0:
         print("No tunneling possible, nucleation criterion not fulfulled!")
         return -1
 
     Tnuc = optimize.brentq(crit, Tmin, Tmax)
     return Tnuc
-    
-
 
 if __name__=="__main__":
     xmin = 2.5e3
-    vir = 1
-    eps = 1/20
-    delta = -.5
+    vir = 0.8
+    eps = 0.1
+    delta = -.3
     N = 4.5
     withQCD=True
     n = 0.15
-    ndim=3
+    ndim=4
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-    Tnuc = findNucleationTemp(pot, 100, 1e-10, ndim, Ttol=1e-2)
+    Tnuc = findNucleationTemp(pot, 100, 1e-10, ndim, Ttol=1e-2, verbose=True)
