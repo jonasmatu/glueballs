@@ -237,6 +237,9 @@ class Instanton():
                 res = np.inf
             return res
 
+        if deltaPhiDiff(rlast) == np.inf:
+            return rmin, phi0, 0.
+        
         r0 = optimize.brentq(deltaPhiDiff, rlast, r, disp=False)
         phi_r0, dphi_r0 = self.exactSolution(r0, phi0, dV0, d2V0)
         return r0, phi_r0, dphi_r0

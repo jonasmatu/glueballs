@@ -24,9 +24,13 @@ from potential import Potential
 def getTnuc(pot, Tmax, Tmin):
     try:
         Tnuc3 = findNucleationTemp(pot, Tmax, Tmin, ndim=3)
+    except:
+        Tnuc3 = 0.0
+    try:
         Tnuc4 = findNucleationTemp(pot, Tmax, Tmin, ndim=4)
     except:
-        Tnuc3, Tnuc4 = 0, 0
+        Tnuc4 = 0.0
+
     return Tnuc3, Tnuc4
 
 
@@ -44,7 +48,8 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
         for j, eps in enumerate(eps_range):
             delta = vir**2 * deltat
             pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-            input_params.append((pot, 500, 1e-3))
+            Tcrit = np.power(-8* pot.VGW(xmin)/(np.pi**2 * N**2), 1/4.0)
+            input_params.append((pot, Tcrit*0.99, 1e-3))
 
     results = pool.starmap(getTnuc, input_params)
     pool.close()

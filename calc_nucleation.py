@@ -52,7 +52,7 @@ def getActionAtT(T: float, pot: Potential, ndim: int, debug=False) -> (float, fl
     # print("phiroot = ", phiroot)
 
     insta = Instanton(V, dV, d2V, ndim=ndim, Nkin=3*pot.N**2/(2*np.pi**2),
-                      xtol=1e-12, phitol=1e-10, rmin_scaling=1e-4) # This setting is very important for small T!
+                      xtol=1e-12, phitol=1e-10, rmin_scaling=1e-6) # This setting is very important for small T!
     r, y, ctype = insta.findProfile(phimeta, pot.xmin, phibar, f=1e-3)
     phi, dphi = y.T
     phi0 = phi[0]
@@ -131,20 +131,24 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
     except StopIteration as e:
         Tmin = e.args[0]
 
-            
-    
-    # print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
+
+
     if nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin) > 0:
         print("No tunneling possible, nucleation criterion not fulfulled!")
         return -1
 
+    if verbose: 
+        print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
+        print("Criterion at Tmax = ", crit(Tmax))
     Tnuc = optimize.brentq(crit, Tmin, Tmax)
+    if verbose:
+        print("Criterion at Tnuc = ", nuclCriterion(critdict[Tnuc][0], critdict[Tnuc][1], Tnuc, pot.xmin))
     return Tnuc
 
 if __name__=="__main__":
     xmin = 2.5e3
-    vir = 0.8
-    eps = 0.1
+    vir = 0.95
+    eps = 0.08
     delta = -.3
     N = 4.5
     withQCD=True
