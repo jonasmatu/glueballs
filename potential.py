@@ -46,8 +46,8 @@ class Potential():
 
         self.VQCD0 = self.VQCD(1e-100)
 
-        self.xbar0 = self.findBarrier(T=0)
-        self.xmeta_min = self.findMetaMin(self.xbar0)
+        # self.xbar0 = self.findBarrier(T=0)
+        # self.xmeta_min = self.findMetaMin(self.xbar0)
 
 
     def VAdS(self, Th, T):
