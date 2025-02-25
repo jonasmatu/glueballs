@@ -473,7 +473,7 @@ class Instanton():
 
 
 
-def S4TriangleApprox(pot, T):
+def S4Approx(pot, T):
 
     V = lambda x: pot.Vfull(x, T)
     phibar = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(0, pot.xmin),
@@ -488,7 +488,7 @@ def S4TriangleApprox(pot, T):
     return S4, phi0
 
 
-def S3TriangleApprox(pot, T):
+def S3Approx(pot, T):
 
     V = lambda x: pot.Vfull(x, T)
     Tcrit = np.power(-8 * pot.VGW(pot.xmin)/(np.pi**2 * pot.N**2), 1/4.0)
