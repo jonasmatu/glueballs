@@ -310,7 +310,9 @@ class Instanton():
 
 
     def integrateAndSaveProfile(self, r0, y0, dr0, drmin, rmax, phimeta, epsfrac, epsabs):
-        """description
+        """Integrate the profile and save to an array
+
+        TODO: change to use a fixed evaluation array in r
 
         Parameters
         ----------

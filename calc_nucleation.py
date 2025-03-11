@@ -155,6 +155,10 @@ if __name__=="__main__":
     n = 0.3
     ndim = 4
 
+    # test values:
+    eps = 0.053
+    vir = 0.45
+
     delta = -.5 * vir**2
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
