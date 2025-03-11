@@ -117,4 +117,4 @@ if __name__=="__main__":
         
     fname = folder + "data.hdf5"
     scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD,
-             npoints=args.npoints, n_jobs=args.jobs, approx=approx)
+             npoints=npoints, n_jobs=args.jobs, approx=approx)
