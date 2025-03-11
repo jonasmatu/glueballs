@@ -9,6 +9,7 @@ import multiprocessing
 import h5py
 import argparse
 import os
+import yaml
 
 from scipy import optimize
 from scipy import interpolate
@@ -85,18 +86,11 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12,
 
 
 if __name__=="__main__":
-    xmin = 2.5e3
-    deltat = -0.5
-    n = 0.3
-    N = 4.5
-    withQCD=True
-
     parser = argparse.ArgumentParser(description='Parameter scan for conformal model.')
     parser.add_argument('-j', '--jobs', type=int)
     parser.add_argument('-f', '--folder', type=str)
     parser.add_argument('-v', '--verbose', type=str)
     parser.add_argument('-n', '--npoints', type=int)
-    parser.add_argument('-a', '--approx', type=bool)
 
     args = parser.parse_args()
 
@@ -109,6 +103,19 @@ if __name__=="__main__":
     if not os.path.exists(folder):
         os.makedirs(folder)
 
+    with open(folder + "config.yaml", 'r') as f:
+        yamldata = yaml.safe_load(f)
+
+    config = yamldata["config"]
+
+    npoints = config["npoints"]
+    approx = config["approx"]
+    xmin = config["xmin"]
+    withQCD = config["withQCD"]
+    n = config["n"]
+    N = config["N"]
+    deltat = config["deltat"]
+        
     fname = folder + "data.hdf5"
     scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD,
-             npoints=args.npoints, n_jobs=args.jobs, approx=args.approx)
+             npoints=args.npoints, n_jobs=args.jobs, approx=approx)
