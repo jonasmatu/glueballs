@@ -52,7 +52,7 @@ def getActionAtT(T: float, pot: Potential, ndim: int, debug=False) -> (float, fl
     # print("phiroot = ", phiroot)
 
     insta = Instanton(V, dV, d2V, ndim=ndim, Nkin=3*pot.N**2/(2*np.pi**2),
-                      xtol=1e-12, phitol=1e-10, rmin_scaling=1e-6) # This setting is very important for small T!
+                      xtol=1e-14, phitol=1e-12, rmin_scaling=1e-8) # This setting is very important for small T!
     r, y, ctype = insta.findProfile(phimeta, pot.xmin, phibar, f=1e-3)
     phi, dphi = y.T
     phi0 = phi[0]
@@ -156,8 +156,8 @@ if __name__=="__main__":
     ndim = 4
 
     # test values:
-    eps = 0.053
-    vir = 0.45
+    eps = 0.05344828
+    vir = 0.445
 
     delta = -.5 * vir**2
     
