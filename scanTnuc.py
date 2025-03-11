@@ -22,14 +22,14 @@ from potential import Potential
 
 def getTnuc(pot, Tmax, Tmin, approx=False):
     try:
-        if approx:
+        if not approx:
             Tnuc3 = findNucleationTemp(pot, Tmax, Tmin, ndim=3)
         else:
             Tnuc3 = findNucleationTempTriangleApprox(pot, Tmax, Tmin, ndim=3)
     except:
         Tnuc3 = -1
     try:
-        if approx:
+        if not approx:
             Tnuc4 = findNucleationTemp(pot, Tmax, Tmin, ndim=4)
         else:
             Tnuc4 = findNucleationTempTriangleApprox(pot, Tmax, Tmin, ndim=4)

@@ -220,7 +220,7 @@ if __name__=="__main__":
     delta = -.5 * vir**2
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-    Tnuc = findNucleationTemp(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
+    # Tnuc = findNucleationTemp(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
     TnucApprox = findNucleationTempTriangleApprox(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
 
     print(f"Tnuc numerical: {Tnuc:2.5g}")
