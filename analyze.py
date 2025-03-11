@@ -6,6 +6,7 @@ import h5py
 
 from scipy import optimize
 from scipy import interpolate
+from scipy import special
 
 import calcBounce as cb
 from calc_nucleation import findNucleationTemp
@@ -65,3 +66,65 @@ def plotTnuc(fname):
 
     plt.show()
 
+
+def calcReheatingTemp(pot: Potential, TSM: float):
+    """Use energy conservation to compute the temperature
+    of the SM after the FOPT.
+
+    Parameters
+    ----------
+    pot:
+        Radion potential
+    TSM:
+        Temperture of the DS and SM plasma before PT (percol)
+    Returns
+    ----------
+    Tg:
+        Glueball temperature
+    """
+    
+
+    
+
+def getRelicDensity(B: float, N: float, LGB: float) -> float:
+    """Calculate the relic density of glueballs today
+
+    Parameters
+    ----------
+    B:
+        Temperature ratio Tg/Tsm
+    N:
+        SU(N)
+    LGB:
+        confinement scale of the glueballs
+
+    Returns
+    ----------
+    Ogh2:
+        Relic density of the glue balls
+    """
+    ODMh2 = 0.12
+    Mpl_GeV = 1.220910e19
+    z = 2.1 * (N**2 - 1)**(2/5.0)/N**(18/5) * B**(3/10) * (Mpl_GeV/LGB)**(3/5)
+    Ogh2 = ODMh2 * 0.056 * (N**2 - 1) * (B/1e-12)**(3/4.0) * LGB * \
+        1/special.lambertw(z)
+    return Ogh2
+
+
+def plotRelicDensity(fname):
+    f = h5py.File(fname, "r")
+    data = f["data"]
+    npoints = data.attrs["npoints"]
+    virstart, virend = data.attrs["vir_start"], data.attrs["vir_end"]
+    epsstart, epsend = data.attrs["eps_start"], data.attrs["eps_end"]
+    xmin = data.attrs["xmin"] 
+    deltat = data.attrs["deltat"]
+    n = data.attrs["n"]
+    N = data.attrs["N"]
+    withQCD = data.attrs["withQCD"]
+    Tnuc3 = data["data/Tnuc3"][:,:]
+    Tnuc4 = data["data/Tnuc4"][:,:]
+    f.close()
+
+    vir_range = np.linspace(virstart, virend, npoints)
+    eps_range = np.linspace(epsstart, epsend, npoints)

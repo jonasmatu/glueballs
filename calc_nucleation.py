@@ -145,6 +145,64 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
         print("Criterion at Tnuc = ", nuclCriterion(critdict[Tnuc][0], critdict[Tnuc][1], Tnuc, pot.xmin))
     return Tnuc
 
+
+def findNucleationTempTriangleApprox(pot, Tmax: float, Tmin: float, ndim: int,
+                                     Ttol=1e-2, verbose=False) -> float:
+    """description
+
+    Parameters
+    ----------
+
+    Returns
+    ----------
+
+    """
+    critdict = {}
+    def crit(T, critdict=critdict, verbose=False):
+        try:
+            T = T[0]
+        except:
+            pass
+        S, phi0 = triangleApproxAction(pot, T, ndim)
+        if ndim == 3:
+            S = S/T
+        critdict[T] = (S, phi0)
+        c = nuclCriterion(S, phi0, T, pot.xmin)
+        if verbose:
+            print(f"T = {T:2.5g}, S = {S:2.5g}, phi0 = {phi0:2.5g}, criterion = {c:2.5g}")
+        return c
+
+    def abort_fmin(T, critdict=critdict, verbose=False):
+        T = T[0]
+        S, phi0 = critdict[T]
+        if nuclCriterion(S, phi0, T, pot.xmin) < 0:
+            raise StopIteration(T)
+        elif T < 0:
+            raise StopIteration(T)
+
+    # First find the minimal value of the tunneling criterion!
+    try:
+        res = optimize.minimize(crit, 0.1*(Tmin+Tmax), method='Nelder-Mead', bounds=[(Tmin, Tmax)],
+                                tol=.1, callback=abort_fmin, args=(critdict, verbose))
+        Tmin = res.x[0]
+    except StopIteration as e:
+        Tmin = e.args[0]
+
+
+
+    if nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin) > 0:
+        print("No tunneling possible, nucleation criterion not fulfulled!")
+        return -1
+
+    if verbose: 
+        print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
+        print("Criterion at Tmax = ", crit(Tmax))
+    Tnuc = optimize.brentq(crit, Tmin, Tmax)
+    if verbose:
+        print("Criterion at Tnuc = ", nuclCriterion(critdict[Tnuc][0], critdict[Tnuc][1], Tnuc, pot.xmin))
+    return Tnuc
+
+
 if __name__=="__main__":
     xmin = 2.5e3
     vir = 0.85
@@ -163,3 +221,8 @@ if __name__=="__main__":
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
     Tnuc = findNucleationTemp(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
+    TnucApprox = findNucleationTempTriangleApprox(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
+
+    print(f"Tnuc numerical: {Tnuc:2.5g}")
+    print(f"Tnuc approxima: {TnucApprox:2.5g}")
+    

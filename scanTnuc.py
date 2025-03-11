@@ -14,27 +14,32 @@ from scipy import optimize
 from scipy import interpolate
 
 import calcBounce as cb
-from calc_nucleation import findNucleationTemp
+from calc_nucleation import findNucleationTemp, findNucleationTempTriangleApprox
 from potential import Potential
 
 
 
-
-
-def getTnuc(pot, Tmax, Tmin):
+def getTnuc(pot, Tmax, Tmin, approx=False):
     try:
-        Tnuc3 = findNucleationTemp(pot, Tmax, Tmin, ndim=3)
+        if approx:
+            Tnuc3 = findNucleationTemp(pot, Tmax, Tmin, ndim=3)
+        else:
+            Tnuc3 = findNucleationTempTriangleApprox(pot, Tmax, Tmin, ndim=3)
     except:
         Tnuc3 = -1
     try:
-        Tnuc4 = findNucleationTemp(pot, Tmax, Tmin, ndim=4)
+        if approx:
+            Tnuc4 = findNucleationTemp(pot, Tmax, Tmin, ndim=4)
+        else:
+            Tnuc4 = findNucleationTempTriangleApprox(pot, Tmax, Tmin, ndim=4)
     except:
         Tnuc4 = -1
 
     return Tnuc3, Tnuc4
 
 
-def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
+def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12,
+             approx=False):
     # Reproduce fig. 4 of servant and harling
     vir_range = np.linspace(0.0, 1.0, npoints)
     eps_range = np.linspace(0.01, .1, npoints)
@@ -52,7 +57,7 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12):
             # by hand: 
             Tmax = Tcrit*0.99
             Tmax = 100
-            input_params.append((pot, Tmax, 1e-10))
+            input_params.append((pot, Tmax, 1e-10, approx))
 
     results = pool.starmap(getTnuc, input_params)
     pool.close()
@@ -91,6 +96,7 @@ if __name__=="__main__":
     parser.add_argument('-f', '--folder', type=str)
     parser.add_argument('-v', '--verbose', type=str)
     parser.add_argument('-n', '--npoints', type=int)
+    parser.add_argument('-a', '--approx', type=bool)
 
     args = parser.parse_args()
 
@@ -105,4 +111,4 @@ if __name__=="__main__":
 
     fname = folder + "data.hdf5"
     scanTnuc(fname, xmin, deltat, n, N, withQCD=withQCD,
-             npoints=args.npoints, n_jobs=args.jobs)
+             npoints=args.npoints, n_jobs=args.jobs, approx=args.approx)

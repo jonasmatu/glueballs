@@ -508,18 +508,28 @@ def S3Approx(pot, T):
 
 
 def triangleApproxAction(pot, T: float, d: int, debug=False) -> (float, float):
+    """Triangle approximation to the bounce action
+
+    Parameters
+    ----------
+
+    Returns
+    ----------
+
+    """
     gamma = special.gamma
     phitol = 1e-8
-    
+
     V = lambda x: pot.Vfull(x, T)
     phiT = optimize.minimize_scalar(lambda phi: -V(phi), bounds=(-T, pot.xmin),
                                       options={"xatol": 1e-20}).x
-
     phip = -T
-    phim = pot.xmin
+    phiroot = optimize.brentq(lambda phi: V(phi) - V(phip), phiT, pot.xmin - 1e-15)
+
+    phim = (phiroot + pot.xmin)/2
     lplus = (V(phiT) - V(phip))/(phiT- phip)
 
-    phim = 2 * phiT
+
     # Approximate the slope with the release point as the reference point
     it = 0
     while True:
@@ -532,7 +542,7 @@ def triangleApproxAction(pot, T: float, d: int, debug=False) -> (float, float):
         # releasepoint 
         phi0 = phiT + c/(2*d*alpha) * (phiT - phip)
 
-        S = 4 * (c + 1)/(d *(d + 2) *gamma(d/2)) \
+        S = 4 * (c + 1)/(d *(d + 2) * gamma(d/2)) \
             * (2*np.pi * (d - 2) * d / (2*c- d*((c+1)**(2/d) - 1)))**(d/2) \
             * (phiT - phip)**d / (V(phiT) - V(phip))**((d-2)/2)
 
