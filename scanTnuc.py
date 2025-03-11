@@ -90,7 +90,6 @@ if __name__=="__main__":
     parser.add_argument('-j', '--jobs', type=int)
     parser.add_argument('-f', '--folder', type=str)
     parser.add_argument('-v', '--verbose', type=str)
-    parser.add_argument('-n', '--npoints', type=int)
 
     args = parser.parse_args()
 
