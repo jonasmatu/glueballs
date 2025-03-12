@@ -64,6 +64,8 @@ def plotTnuc(fname):
                  + r"$\mu_\mathrm{min}$ = " + f"{xmin:3.0f}", fontsize=14)
     
 
+    plotname = fname.replace("data/", "").replace("/data.hdf5", "") + ".png"
+    plt.savefig("plots/"+plotname)
     plt.show()
 
 
