@@ -530,17 +530,53 @@ def triangleApproxAction(pot, T: float, d: int, debug=False) -> (float, float):
     lplus = (V(phiT) - V(phip))/(phiT- phip)
 
 
+    phi0 = pot.xmin
+    
     # Approximate the slope with the release point as the reference point
     it = 0
     while True:
         it += 1
         lminus = - (V(phiT) - V(phim)) / (phiT - phim)
         c = lminus/lplus
-
+            
         alpha = (2 * c - d*((c + 1)**(2/d) - 1))/(2*d*(d-2))
+
+        # if True:
+        #     print("it = ", it)
+        #     print("T = ", T)
+        #     print("c+1 = ", c+1)
+        #     print("alpha = ", alpha)
+        #     print("pot.xmin = ", pot.xmin)
+        #     print("phiroot = ", phiroot)
+        #     print("phi0 = ", phi0)
+        #     print("phiT = ", phiT)
+        #     print("phim = ", phim)
+        #     print("phip", phip)
+        #     print("lminus = ", lminus)
+        #     print("c = ", c)
+        #     print("V(phiT) = ", V(phiT))
+        #     print("V(phim) = ", V(phim))
+        #     phirange = np.linspace(phip, phi0*1.05, 200)
+        #     phiprange = np.linspace(phip, phiT, 100)
+        #     phimrange = np.linspace(phiT, phim, 100)
+        #     plt.plot(phirange, V(phirange))
+        #     plt.scatter(phiT, V(phiT), label=r"$\phi$ barrier")
+        #     plt.scatter(phi0, V(phi0), label=r"$\phi_0$")
+        #     plt.plot(phiprange, V(phip) + lplus*(phiprange - phip), color="green")
+        #     plt.plot(phimrange, V(phiT)  + lminus*(phiT - phimrange), color="green")
+        #     plt.xlabel(r"$\phi$")
+        #     plt.ylabel(r"$V(\phi)$")
+
+        #     plt.legend()
+        #     plt.show()
+
 
         # releasepoint 
         phi0 = phiT + c/(2*d*alpha) * (phiT - phip)
+
+        # make sure the release point doesn't overshoot the true minimum
+        if phi0 > phim:
+            phi0 = phim
 
         S = 4 * (c + 1)/(d *(d + 2) * gamma(d/2)) \
             * (2*np.pi * (d - 2) * d / (2*c- d*((c+1)**(2/d) - 1)))**(d/2) \
