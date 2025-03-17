@@ -147,7 +147,7 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
 
 
 def findNucleationTempTriangleApprox(pot, Tmax: float, Tmin: float, ndim: int,
-                                     Ttol=1e-2, verbose=False) -> float:
+                                     Ttol=1e-5, verbose=False) -> float:
     """description
 
     Parameters
@@ -183,7 +183,7 @@ def findNucleationTempTriangleApprox(pot, Tmax: float, Tmin: float, ndim: int,
     # First find the minimal value of the tunneling criterion!
     try:
         res = optimize.minimize(crit, 0.1*(Tmin+Tmax), method='Nelder-Mead', bounds=[(Tmin, Tmax)],
-                                tol=.1, callback=abort_fmin, args=(critdict, verbose))
+                                tol=1e-8, callback=abort_fmin, args=(critdict, verbose))
         Tmin = res.x[0]
     except StopIteration as e:
         Tmin = e.args[0]
@@ -191,7 +191,8 @@ def findNucleationTempTriangleApprox(pot, Tmax: float, Tmin: float, ndim: int,
 
 
     if nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin) > 0:
-        print("No tunneling possible, nucleation criterion not fulfulled!")
+        if verbose:
+            print("No tunneling possible, nucleation criterion not fulfulled!")
         return -1
 
     if verbose: 
@@ -213,16 +214,21 @@ if __name__=="__main__":
     n = 0.3
     ndim = 4
 
-    # test values:
-    eps = 0.05344828
-    vir = 0.445
+    # test values
+    ndim = 4
+    deltat = -0.3
+    n = 0.15
+    eps = 0.095
+    vir = 0.97
 
     delta = -.5 * vir**2
     
     pot = Potential(xmin, vir, eps, delta, n, N=N, withQCD=withQCD)
-    # Tnuc = findNucleationTemp(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
-    TnucApprox = findNucleationTempTriangleApprox(pot, 100, 1e-20, ndim, Ttol=1e-2, verbose=True)
-
+    Tcrit = np.power(-8* pot.VGW(xmin)/(np.pi**2 * N**2), 1/4.0)
+    Tmax = (1-1e-3)*Tcrit
+    Tnuc = findNucleationTemp(pot, Tmax, 1e-20, ndim, Ttol=1e-2, verbose=True)
     print(f"Tnuc numerical: {Tnuc:2.5g}")
+
+    TnucApprox = findNucleationTempTriangleApprox(pot, Tmax, 1e-20, ndim, Ttol=1e-2, verbose=False)
     print(f"Tnuc approxima: {TnucApprox:2.5g}")
     

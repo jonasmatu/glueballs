@@ -57,7 +57,7 @@ def scanTnuc(fname, xmin, deltat, n, N, withQCD=True, npoints=30, n_jobs=12,
             Tcrit = np.power(-8* pot.VGW(xmin)/(np.pi**2 * N**2), 1/4.0)
             # by hand: 
             Tmax = Tcrit*0.99
-            # Tmax = 100
+            # Tmax = 50
             input_params.append((pot, Tmax, 1e-10, approx))
 
     results = pool.starmap(getTnuc, input_params)
