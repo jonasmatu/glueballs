@@ -45,8 +45,7 @@ def getActionAtT(T: float, pot: Potential, ndim: int, debug=False) -> (float, fl
         print("at phibar = ", V(phibar) - V(phimeta))
         print("at xmin = ", V(xmin) - V(phimeta))
         pot.plotPotentialAll(phiroot*1.1, T, -T)
-        
-    
+
 
     # print("phibar = ", phibar)
     # print("phiroot = ", phiroot)
@@ -68,7 +67,6 @@ def getActionAtT(T: float, pot: Potential, ndim: int, debug=False) -> (float, fl
         plt.show()
 
     return S, phi0
-
 
 
 def nuclCriterion(S: float, phi0: float, T: float, xmin: float) -> float:
@@ -109,15 +107,15 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
         S, phi0 = getActionAtT(T, pot, ndim)
         if ndim == 3:
             S = S/T
-        critdict[T] = (S, phi0)
         c = nuclCriterion(S, phi0, T, pot.xmin)
+        critdict[T] = (S, phi0, c)
         if verbose:
             print(f"T = {T:2.5g}, S = {S:2.5g}, phi0 = {phi0:2.5g}, criterion = {c:2.5g}")
         return c
 
     def abort_fmin(T, critdict=critdict, verbose=False):
         T = T[0]
-        S, phi0 = critdict[T]
+        S, phi0, _ = critdict[T]
         if nuclCriterion(S, phi0, T, pot.xmin) < 0:
             raise StopIteration(T)
         elif T < 0:
@@ -137,10 +135,20 @@ def findNucleationTemp(pot, Tmax: float, Tmin: float, ndim: int,
         print("No tunneling possible, nucleation criterion not fulfulled!")
         return -1
 
+    # import pdb
+    # pdb.set_trace()
+
+    # search for the smallest possible value of tmax:
+    Tmax_min = Tmax
+    for TT in critdict.keys():
+        if critdict[TT][2] > 0 and TT < Tmax_min:
+            Tmax_min = TT
+    
+    
     if verbose: 
-        print("Criterion at Tmin = ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
-        print("Criterion at Tmax = ", crit(Tmax))
-    Tnuc = optimize.brentq(crit, Tmin, Tmax)
+        print(f"Criterion at Tmin = {Tmin:2.5g}: ", nuclCriterion(critdict[Tmin][0], critdict[Tmin][1], Tmin, pot.xmin))
+        print(f"Criterion at Tmax = {Tmax_min:2.5g}: ", crit(Tmax_min))
+    Tnuc = optimize.brentq(crit, Tmin, Tmax_min)
     if verbose:
         print("Criterion at Tnuc = ", nuclCriterion(critdict[Tnuc][0], critdict[Tnuc][1], Tnuc, pot.xmin))
     return Tnuc
@@ -215,11 +223,11 @@ if __name__=="__main__":
     ndim = 4
 
     # test values
-    ndim = 4
+    ndim = 3
     deltat = -0.3
-    n = 0.15
-    eps = 0.095
-    vir = 0.97
+    n = 0.20
+    eps = 0.01
+    vir = 0.68965517
 
     delta = -.5 * vir**2
     
